@@ -49,4 +49,5 @@ docker run -it \
     -p ${ZONESERVERPORT}:${ZONESERVERPORT}/udp \
     -v shared-tre:/tre:ro \
     -v swgemu-core3:/home/swgemu \
+    ${CORE3_SRC:+-v ${CORE3_SRC}:/src:ro} \
     ${IMAGE}
