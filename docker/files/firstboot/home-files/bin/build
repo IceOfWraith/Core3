@@ -15,12 +15,12 @@ else
         cd ~/workspace/Core3/MMOCoreORB
 fi
 
-export CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_BUILD_CLIENT=OFF ${CMAKE_ARGS}"
-export CMAKE_ARGS="${CMAKE_ARGS} "'-DCMAKE_CXX_FLAGS="-DNDEBUG=1"'
-
 BUILD_CLEAN=false
 BUILD_NOCACHE=false
 ASAN=false
+# Optimized with debug symbols by default; pass 'debug' for an unoptimized
+# build with DEBUG_AI/DEBUG_SHIP_AI enabled.
+BUILD_TYPE=RelWithDebInfo
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -30,12 +30,26 @@ do
                 clean ) BUILD_CLEAN=true ;;
                 nocache ) BUILD_NOCACHE=true ;;
                 asan ) ASAN=true ;;
+                debug ) BUILD_TYPE=Debug ;;
         esac
         shift
 done
 
 if $ASAN; then
-        export CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_ASAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+        BUILD_TYPE=RelWithDebInfo
+fi
+
+if [ "$BUILD_TYPE" = "Debug" ]; then
+        NINJA_TARGET=ninja-debug
+else
+        NINJA_TARGET=ninja-debugoptimized
+fi
+
+export CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DENABLE_BUILD_CLIENT=OFF ${CMAKE_ARGS}"
+export CMAKE_ARGS="${CMAKE_ARGS} "'-DCMAKE_CXX_FLAGS="-DNDEBUG=1"'
+
+if $ASAN; then
+        export CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_ASAN=ON"
 fi
 
 (
@@ -57,13 +71,13 @@ if $BUILD_NOCACHE; then
 fi
 
 if $BUILD_CLEAN; then
-        make clean-ninja-debug CMAKE_ARGS="${CMAKE_ARGS}"
+        make clean-${NINJA_TARGET} CMAKE_ARGS="${CMAKE_ARGS}"
 fi
 
 ccache -z
 
-if fgrep "build-ninja-debug" Makefile; then
-        time make build-ninja-debug CMAKE_ARGS="${CMAKE_ARGS}"
+if fgrep "build-${NINJA_TARGET}:" Makefile; then
+        time make build-${NINJA_TARGET} CMAKE_ARGS="${CMAKE_ARGS}"
 else
         export MAKE=$(type -P make)' -j'$(nproc)
         time make build-cmake-with-idl -j$(nproc) CMAKE_ARGS="${CMAKE_ARGS}"
