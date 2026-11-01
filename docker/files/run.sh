@@ -34,6 +34,9 @@ warning() {
 if [ ! -d "${HOME_DIR}/mysql" ]; then
     source /firstboot/functions
     core3_firstboot
+elif [ "${DBHOST:-127.0.0.1}" = "127.0.0.1" ]; then
+    # First boot starts the local database; a container restart must too.
+    /etc/init.d/mariadb start
 fi
 
 core3_boot() {
