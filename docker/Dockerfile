@@ -43,6 +43,7 @@ RUN set -xe; \
         cpio \
         cppcheck \
         curl \
+        default-jre-headless \
         db5.3-util \
         dnsutils \
         doxygen \
@@ -52,6 +53,8 @@ RUN set -xe; \
         gcc \
         gcovr \
         gdb \
+        heaptrack \
+        linux-perf \
         gettext-base \
         git-lfs \
         git-man \
