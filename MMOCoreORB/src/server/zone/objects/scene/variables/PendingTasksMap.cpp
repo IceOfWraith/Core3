@@ -13,7 +13,9 @@
 using namespace server::zone::objects::scene::variables;
 using namespace server::zone::objects::scene;
 
-PendingTasksMap::PendingTasksMap() : taskMap(1, 1), pendingTasks(1000) {
+// The queue is not fixed-size: push() allocates nodes on demand and keeps
+// popped ones for reuse, so preallocating only costs memory per object.
+PendingTasksMap::PendingTasksMap() : taskMap(1, 1), pendingTasks(0) {
 	taskMap.setNoDuplicateInsertPlan();
 	taskMap.setNullValue(nullptr);
 }
